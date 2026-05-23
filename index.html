@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Klik Balon</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #87CEEB, #1E90FF);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* === TAMBAHAN UNTUK LOGO === */
+        #logoGame {
+            width: 140px;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .info {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        #gameArea {
+            width: 90vw;
+            height: 50vh;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balon {
+            width: 60px;
+            height: 80px;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            transition: 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .balon::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 10px;
+            background: rgba(255,255,255,0.7);
+        }
+
+        #mulaiBtn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #32CD32;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        #mulaiBtn:hover {
+            transform: scale(1.05);
+        }
+
+        #pesan {
+            margin-top: 15px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo.png -->
+    <img src="logo-game.png" alt="Logo Game Klik Balon" id="logoGame">
+
+    <h1>🎈 Game Klik Balon 🎈</h1>
+    <div class="info">
+        <div>Skor: <span id="skor">0</span></div>
+        <div>Waktu: <span id="waktu">30</span> detik</div>
+    </div>
+    <div id="gameArea"></div>
+    <button id="mulaiBtn">Mulai Game</button>
+    <div id="pesan"></div>
+
+    <script>
+        // Elemen HTML
+        const gameArea = document.getElementById('gameArea');
+        const skorEl = document.getElementById('skor');
+        const waktuEl = document.getElementById('waktu');
+        const mulaiBtn = document.getElementById('mulaiBtn');
+        const pesanEl = document.getElementById('pesan');
+
+        // Variabel Game
+        let skor = 0;
+        let sisaWaktu = 30;
+        let berjalan = false;
+        let intervalBalon;
+        let intervalWaktu;
+        const warnaBalon = ['#FF4444', '#FFBB33', '#00C851', '#33B5E5', '#AA66CC', '#FF8800'];
+
+        // Mulai Game
+        mulaiBtn.addEventListener('click', mulaiGame);
+
+        function mulaiGame() {
+            // Reset nilai
+            skor = 0;
+            sisaWaktu = 30;
+            berjalan = true;
+            skorEl.textContent = skor;
+            waktuEl.textContent = sisaWaktu;
+            pesanEl.textContent = '';
+            gameArea.innerHTML = '';
+            mulaiBtn.disabled = true;
+            mulaiBtn.style.opacity = '0.7';
+
+            // Jalan waktu
+            intervalWaktu = setInterval(() => {
+                sisaWaktu--;
+                waktuEl.textContent = sisaWaktu;
+
+                if (sisaWaktu <= 0) {
+                    selesaiGame();
+                }
+            }, 1000);
+
+            // Munculkan balon setiap 800ms
+            intervalBalon = setInterval(tambahBalon, 800);
+        }
+
+        // Buat balon baru
+        function tambahBalon() {
+            if (!berjalan) return;
+
+            const balon = document.createElement('div');
+            balon.classList.add('balon');
+
+            // Warna acak
+            const warnaAcak = warnaBalon[Math.floor(Math.random() * warnaBalon.length)];
+            balon.style.background = warnaAcak;
+
+            // Posisi acak
+            const posX = Math.random() * (gameArea.offsetWidth - 70);
+            const posY = Math.random() * (gameArea.offsetHeight - 90);
+            balon.style.left = posX + 'px';
+            balon.style.top = posY + 'px';
+
+            // Nilai poin acak
+            const poin = Math.floor(Math.random() * 10) + 1;
+            balon.textContent = poin;
+
+            // Event klik
+            balon.addEventListener('click', () => {
+                if (!berjalan) return;
+                skor += poin;
+                skorEl.textContent = skor;
+                balon.style.transform = 'scale(0)';
+                setTimeout(() => balon.remove(), 100);
+            });
+
+            // Hapus otomatis jika tidak diklik
+            setTimeout(() => {
+                if (balon.parentElement) balon.remove();
+            }, 2000);
+
+            gameArea.appendChild(balon);
+        }
+
+        // Selesai Game
+        function selesaiGame() {
+            berjalan = false;
+            clearInterval(intervalBalon);
+            clearInterval(intervalWaktu);
+            mulaiBtn.disabled = false;
+            mulaiBtn.style.opacity = '1';
+            pesanEl.textContent = `Game Selesai! Skor Akhirmu: ${skor}`;
+        }
+    </script>
+</body>
+</html>
+ml>
